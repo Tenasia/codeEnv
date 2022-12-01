@@ -20,7 +20,7 @@ class DataBaseGUI:
         
 
         self.window.geometry(f'{DataBaseGUI.X_SIZE_WINDOW}x{DataBaseGUI.Y_SIZE_WINDOW}')
-        self.window.title('CARE-M Login Page')
+        self.window.title('Try Commit Changes')
 
         login_frame = tk.Frame(self.window, width=400, height=400)
         login_frame.grid(row=0, column=0)
