@@ -14,21 +14,14 @@ class DataBaseGUI:
         # INITIALIZED VARIABLES
         self.window = tk.Tk()
 
-
-
         # VARIABLES
         self.login_frame, self.login_button, self.username, self.password = self.create_login_frame()
-    
-        
-
-        
-
         
     def create_login_frame(self):
         
         # INITIALIZE VARIABLES
         self.window.resizable(False, False)
-        self.window.bind('<Return>', self.submit_act)
+        self.window.bind('<Return>', self.login)
         self.img = PhotoImage(file='pupicon.png')
         self.window.iconphoto(False, self.img)
         self.window.geometry(f'{DataBaseGUI.X_SIZE_WINDOW}x{DataBaseGUI.Y_SIZE_WINDOW}')
@@ -60,17 +53,15 @@ class DataBaseGUI:
         login_button = tk.Button(login_frame, text="LOGIN")
         login_button.config(font=('Helvetica Bold', 16))
         login_button.grid(row=3, columnspan=2, padx=10, pady=(25, 0))
-        login_button['command'] = self.submit_act
-
-
+        login_button['command'] = self.login
 
         return login_frame, login_button, username_info, password_info
-    def submit_act(self, event=None):
+
+    def login(self, event=None):
         
         username = self.username.get()
         password = self.password.get()
-        
-        
+              
         self.login_to_db(username, password)
 
     def login_to_db(self, username, password):
@@ -94,9 +85,7 @@ class DataBaseGUI:
             for i in my_result:
                 print(i)
             
-            
             self.login_frame.destroy()
-
 
             self.create_database_frame()
             
@@ -116,20 +105,69 @@ class DataBaseGUI:
         self.window.title("Database Table")
         self.window.geometry(f'{600}x{400}')
 
-        login_frame = tk.Frame(self.window, width=600, height=400)
-        login_frame.grid(row=0, column=3, columnspan=4)
+        database_frame = tk.Frame(self.window)
+        database_frame.grid(row=0, column=0, padx=10, pady=10)
         
-        spacer = tk.Label(login_frame, text='')
-        spacer.grid(row=0, column = 0,columnspan=2)
+        # LABELS
+        student_id_label = tk.Label(database_frame, text='Student ID')
+        student_id_label.grid(row=0, column=0, pady=10, padx=10)
+        student_id_label.config(font=('Helvetica Bold', 10))
 
-        title_label= tk.Button(login_frame, text="ADD")
-        title_label.config(font=('Helvetica Bold', 16))
-        title_label.grid(row=1, column=2, padx=(150, 0), pady=50)
-        title_label['command'] = self.drawATriangle
+        first_name_label = tk.Label(database_frame, text='First Name')
+        first_name_label.grid(row=1, column=0, pady=10, padx=10)
+        first_name_label.config(font=('Helvetica Bold', 10))
 
-        username_label = tk.Button(login_frame, text="REMOVE")
-        username_label.config(font=('Helvetica Bold', 16))
-        username_label.grid(row=1, column=3, padx=(40, 0), pady=50)
+        last_name_label = tk.Label(database_frame, text='Last Name')
+        last_name_label.grid(row=2, column=0, pady=10, padx=10)
+        last_name_label.config(font=('Helvetica Bold', 10))
+        
+        course_label = tk.Label(database_frame, text='Course')
+        course_label.grid(row=3, column=0, pady=10, padx=10)
+        course_label.config(font=('Helvetica Bold', 10))
+
+        
+
+        # FORMS
+        student_id = tk.Entry(database_frame, width=30)
+        student_id.grid(row=0, column=1,)
+
+        first_name = tk.Entry(database_frame, width=30)
+        first_name.grid(row=1, column=1)
+
+        last_name = tk.Entry(database_frame, width=30)
+        last_name.grid(row=2, column=1)
+
+        course = tk.Entry(database_frame, width=30)
+        course.grid(row=3, column=1)
+
+        
+        submit_button = tk.Button(database_frame, text='ADD')
+        submit_button.grid(row=0, column=2, padx=25, pady=10, ipadx=35)
+
+        edit_button = tk.Button(database_frame, text='DELETE')
+        edit_button.grid(row=0, column=3, padx=25, pady=10, ipadx=35)
+        # submit_button['command'] = self.submit
+        # submit_button.config(font=('Helvetica Bold', 16))
+
+
+    
+        # edit_button = tk.Button(database_frame, text='EDIT')
+        # edit_button.grid(row=7, column=0, padx=10, pady=10, ipadx=50)
+        # edit_button['command'] = self.submit
+        # edit_button.config(font=('Helvetica Bold', 16))
+
+        # delete_button = tk.Button(database_frame, text='DELETE')
+        # delete_button.grid(row=7, column=1, padx=10, pady=10, ipadx=50)
+        # delete_button['command'] = self.submit
+        # delete_button.config(font=('Helvetica Bold', 16))
+        # spacer = tk.Label(database_frame, text='')
+        # spacer.grid(row=0, column = 0,columnspan=2)
+
+        
+
+        # username_label = tk.Button(database_frame, text="REMOVE")
+        # username_label.config(font=('Helvetica Bold', 16))
+        # username_label.grid(row=1, column=3, padx=(40, 0), pady=50)
     
     def drawATriangle(self):
 
