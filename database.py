@@ -23,7 +23,7 @@ class DataBaseGUI:
     def create_login_frame(self):
         
         # INITIALIZE VARIABLES
-        # self.window.resizable(False, False)
+        self.window.resizable(False, False)
         self.window.bind('<Return>', self.login)
         self.img = PhotoImage(file='pupicon.png')
         self.window.iconphoto(False, self.img)
@@ -31,6 +31,7 @@ class DataBaseGUI:
         self.window.title('CARE-M Login Page')
 
         self.center(self.window)
+
         # FRAMES
         login_frame = tk.Frame(self.window, width=600, height=600)
         login_frame.grid(row=0, column=0, ipadx=500)
@@ -65,8 +66,8 @@ class DataBaseGUI:
         username = self.username.get()
         password = self.password.get()
 
-
         self.login_to_db(username, password)
+
     def login_to_db(self, username, password):
         
         self.username1 = username
@@ -89,13 +90,7 @@ class DataBaseGUI:
         except:
             print("Error occured")
             db.rollback()
-            
-        # finally:
-        #     if db.is_connected():
-        #         cursor.close()
-        #         db.close()
-        #         print("MySQL connection is closed.")
-    
+
     def submit(self, event=None):
         
         serial_id = self.serial_id.get()
@@ -183,7 +178,6 @@ class DataBaseGUI:
         show_button = tk.Button(database_frame, text='SHOW TABLE')
         show_button.grid(row=1, column=3, padx=25, pady=10, ipadx=25)
         show_button['command'] = self.show
-
         # TABLE
         
         self.create_tree()
@@ -191,10 +185,10 @@ class DataBaseGUI:
         return serial_id, first_name, surname, remarks, location
 
     def create_tree(self):
-        columns = ('ID', 'SERIAL_ID', 'FIRST_NAME', 'SURNAME', 'DATE_TIME', 'LOC', 'REMARKS')
-        self.tree = ttk.Treeview(self.window, columns=columns, show='headings')
 
-        # define headings
+        columns = ('ID', 'SERIAL_ID', 'FIRST_NAME', 'SURNAME', 'DATE_TIME', 'LOC', 'REMARKS')
+        
+        self.tree = ttk.Treeview(self.window, columns=columns, show='headings')
 
         for column in columns:
             self.tree.heading(column, text=column)
@@ -204,19 +198,12 @@ class DataBaseGUI:
                 self.tree.column(str(column), width=100)
         
         self.tree.grid(row=5, column=0, sticky=tk.NSEW, padx=(25, 0))
-         # contacts = []
-        # for n in range(1, 100):
-        #     contacts.append((f'first {n}', f'last {n}', f'email{n}@example.com'))
-        
-        # for contact in contacts:
-        #     tree.insert('', tk.END, values=contact)
-        
-
-        # adding an item
-              
-        # tree.insert()
     
     def show(self):
+
+        # Clears the table
+        self.clear_all()
+
         db = mysql.connector.connect(host='localhost', user=self.username1, password=self.password1, db='college')
         cursor = db.cursor()    
 
@@ -227,12 +214,12 @@ class DataBaseGUI:
 
             for info in records:
                 self.tree.insert('', tk.END, values=info)
-
         
         except Exception as e:
             print(e)
             db.rollback()
             db.close()
+
     def graphPoints(self):
 
         # SETUP
@@ -287,6 +274,11 @@ class DataBaseGUI:
 
         wn.exitonclick()
 
+    def clear_all(self):
+
+        for item in self.tree.get_children():
+            self.tree.delete(item)
+            
     def center(self, win):
 
         win.update_idletasks()
