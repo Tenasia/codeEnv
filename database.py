@@ -2,6 +2,8 @@ import tkinter as tk
 import mysql.connector
 from tkinter import messagebox, PhotoImage
 from tkinter.ttk import *
+from tkinter import *
+from tkinter import ttk
 import turtle
 import random
 
@@ -21,7 +23,7 @@ class DataBaseGUI:
     def create_login_frame(self):
         
         # INITIALIZE VARIABLES
-        self.window.resizable(False, False)
+        # self.window.resizable(False, False)
         self.window.bind('<Return>', self.login)
         self.img = PhotoImage(file='pupicon.png')
         self.window.iconphoto(False, self.img)
@@ -67,8 +69,8 @@ class DataBaseGUI:
         self.login_to_db(username, password)
     def login_to_db(self, username, password):
         
-        self.username = username
-        self.password = password
+        self.username1 = username
+        self.password1 = password
 
         if password:
             db = mysql.connector.connect(host='localhost', user=username, password=password, db='college')
@@ -102,7 +104,7 @@ class DataBaseGUI:
         remarks = self.remarks.get()
         location = self.location.get()
 
-        db = mysql.connector.connect(host='localhost', user=self.username, password=self.password, db='college')
+        db = mysql.connector.connect(host='localhost', user=self.username1, password=self.password1, db='college')
         cursor = db.cursor()    
         try:
             query = 'INSERT INTO `tb_carem` (`SERIAL_ID`, `SURNAME`, `FIRST_NAME`,`REMARKS`, `LOC`) VALUES (%s, %s, %s, %s, %s);'
@@ -122,16 +124,10 @@ class DataBaseGUI:
             print(e)
             db.rollback()
             db.close()
-
-
-
-        # Deleting the forms after submitting
         
-
-
     def create_database_frame(self):
         self.window.title("Database Table")
-        self.window.geometry(f'{600}x{400}')
+        self.window.geometry(f'{800}x{500}')
         self.window.bind('<Return>', self.submit)
 
         database_frame = tk.Frame(self.window)
@@ -174,6 +170,7 @@ class DataBaseGUI:
         
         location = tk.Entry(database_frame, width=30)
         location.grid(row=4, column=1)
+
         # BUTTONS
         submit_button = tk.Button(database_frame, text='ADD')
         submit_button.grid(row=0, column=2, padx=25, pady=10, ipadx=25)
@@ -183,7 +180,59 @@ class DataBaseGUI:
         graph_button.grid(row=0, column=3, padx=25, pady=10, ipadx=25)
         graph_button['command'] = self.graphPoints
 
+        show_button = tk.Button(database_frame, text='SHOW TABLE')
+        show_button.grid(row=1, column=3, padx=25, pady=10, ipadx=25)
+        show_button['command'] = self.show
+
+        # TABLE
+        
+        self.create_tree()
+
         return serial_id, first_name, surname, remarks, location
+
+    def create_tree(self):
+        columns = ('ID', 'SERIAL_ID', 'FIRST_NAME', 'SURNAME', 'DATE_TIME', 'LOC', 'REMARKS')
+        self.tree = ttk.Treeview(self.window, columns=columns, show='headings')
+
+        # define headings
+
+        for column in columns:
+            self.tree.heading(column, text=column)
+            if column == 'DATE_TIME':
+                self.tree.column(str(column), width=150)
+            else:
+                self.tree.column(str(column), width=100)
+        
+        self.tree.grid(row=5, column=0, sticky=tk.NSEW, padx=(25, 0))
+         # contacts = []
+        # for n in range(1, 100):
+        #     contacts.append((f'first {n}', f'last {n}', f'email{n}@example.com'))
+        
+        # for contact in contacts:
+        #     tree.insert('', tk.END, values=contact)
+        
+
+        # adding an item
+              
+        # tree.insert()
+    
+    def show(self):
+        db = mysql.connector.connect(host='localhost', user=self.username1, password=self.password1, db='college')
+        cursor = db.cursor()    
+
+        try:
+            query = 'SELECT ID,SERIAL_ID,FIRST_NAME,SURNAME,DATE_TIME,LOC,REMARKS FROM tb_carem'
+            cursor.execute(query)
+            records = cursor.fetchall()
+
+            for info in records:
+                self.tree.insert('', tk.END, values=info)
+
+        
+        except Exception as e:
+            print(e)
+            db.rollback()
+            db.close()
     def graphPoints(self):
 
         # SETUP
