@@ -102,6 +102,14 @@ class DataBaseGUI:
         db = mysql.connector.connect(host='localhost', user=self.username1, password=self.password1, db='college')
         cursor = db.cursor()    
         try:
+            
+            print(serial_id)
+            print(surname)
+            print(first_name)
+            print(remarks)
+            if location == '':
+                print('empty')
+
             query = 'INSERT INTO `tb_carem` (`SERIAL_ID`, `SURNAME`, `FIRST_NAME`,`REMARKS`, `LOC`) VALUES (%s, %s, %s, %s, %s);'
             values = (serial_id, surname, first_name, remarks, location)
             cursor.execute(query, values)
