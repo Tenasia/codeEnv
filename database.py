@@ -20,13 +20,15 @@ class DataBaseGUI:
         # VARIABLES
         self.login_frame, self.login_button, self.username, self.password = self.create_login_frame()
 
+       
+
     def create_login_frame(self):
         
         # INITIALIZE VARIABLES
         self.window.resizable(False, False)
         self.window.bind('<Return>', self.login)
-        self.img = PhotoImage(file='pupicon.png')
-        self.window.iconphoto(False, self.img)
+        # self.img = PhotoImage(file='pupicon.png')
+        # self.window.iconphoto(False, self.img)
         self.window.geometry(f'{DataBaseGUI.X_SIZE_WINDOW}x{DataBaseGUI.Y_SIZE_WINDOW}')
         self.window.title('CARE-M Login Page')
 
@@ -91,44 +93,8 @@ class DataBaseGUI:
             print("Error occured")
             db.rollback()
 
-    def submit(self, event=None):
-        
-        serial_id = self.serial_id.get()
-        surname = self.last_name.get()
-        first_name = self.first_name.get()
-        remarks = self.remarks.get()
-        location = self.location.get()
-
-        db = mysql.connector.connect(host='localhost', user=self.username1, password=self.password1, db='college')
-        cursor = db.cursor()    
-        try:
-            
-            print(serial_id)
-            print(surname)
-            print(first_name)
-            print(remarks)
-            if location == '':
-                print('empty')
-
-            query = 'INSERT INTO `tb_carem` (`SERIAL_ID`, `SURNAME`, `FIRST_NAME`,`REMARKS`, `LOC`) VALUES (%s, %s, %s, %s, %s);'
-            values = (serial_id, surname, first_name, remarks, location)
-            cursor.execute(query, values)
-            db.commit()
-            
-            messagebox.showinfo('Successful', 'Inserted Data Successfully.')
-            self.serial_id.delete(0, tk.END)
-            self.last_name.delete(0, tk.END)
-            self.first_name.delete(0, tk.END)
-            self.remarks.delete(0, tk.END)
-            self.location.delete(0, tk.END)
-
-            self.serial_id.focus_set()
-        except Exception as e:
-            print(e)
-            db.rollback()
-            db.close()
-        
     def create_database_frame(self):
+
         self.window.title("Database Table")
         self.window.geometry(f'{800}x{500}')
         self.window.bind('<Return>', self.submit)
@@ -153,7 +119,7 @@ class DataBaseGUI:
         remarks_label.grid(row=3, column=0, pady=10, padx=10)
         remarks_label.config(font=('Helvetica Bold', 10))
 
-        location_label = tk.Label(database_frame, text='Location')
+        location_label =  tk.Label(database_frame, text='Location')
         location_label.grid(row=4, column=0, pady=10, padx=10)
         location_label.config(font=('Helvetica Bold', 10))
 
@@ -171,21 +137,32 @@ class DataBaseGUI:
         remarks = tk.Entry(database_frame, width=30)
         remarks.grid(row=3, column=1)
         
+
         location = tk.Entry(database_frame, width=30)
         location.grid(row=4, column=1)
 
-        # BUTTONS
+        # CRUD BUTTONS
         submit_button = tk.Button(database_frame, text='ADD')
         submit_button.grid(row=0, column=2, padx=25, pady=10, ipadx=25)
         submit_button['command'] = self.submit
         
+        update_button = tk.Button(database_frame, text='UPDATE')
+        update_button.grid(row=1, column=2, padx=25, pady=10, ipadx=25)
+        update_button['command'] = self.update
+
+        delete_button = tk.Button(database_frame, text='DELETE')
+        delete_button.grid(row=2, column=2, padx=25, pady=10, ipadx=25)
+        delete_button['command'] = self.delete
+
         graph_button = tk.Button(database_frame, text='SHOW GRAPH')
         graph_button.grid(row=0, column=3, padx=25, pady=10, ipadx=25)
         graph_button['command'] = self.graphPoints
 
-        show_button = tk.Button(database_frame, text='SHOW TABLE')
-        show_button.grid(row=1, column=3, padx=25, pady=10, ipadx=25)
-        show_button['command'] = self.show
+        # self.show()
+
+        # show_button = tk.Button(database_frame, text='SHOW TABLE')
+        # show_button.grid(row=1, column=3, padx=25, pady=10, ipadx=25)
+        # show_button['command'] = self.show
         # TABLE
         
         self.create_tree()
@@ -198,6 +175,10 @@ class DataBaseGUI:
         
         self.tree = ttk.Treeview(self.window, columns=columns, show='headings')
 
+        scrollbar = ttk.Scrollbar(self.window, orient='vertical', command=self.tree.yview)
+
+        self.tree.configure(yscrollcommand=scrollbar.set)
+
         for column in columns:
             self.tree.heading(column, text=column)
             if column == 'DATE_TIME':
@@ -206,6 +187,10 @@ class DataBaseGUI:
                 self.tree.column(str(column), width=100)
         
         self.tree.grid(row=5, column=0, sticky=tk.NSEW, padx=(25, 0))
+
+        scrollbar.grid(row=5, column=7, sticky=tk.N + tk.S)
+
+        self.show()
     
     def show(self):
 
@@ -228,6 +213,157 @@ class DataBaseGUI:
             db.rollback()
             db.close()
 
+    def submit(self, event=None):
+
+        db = mysql.connector.connect(host='localhost', user=self.username1, password=self.password1, db='college')
+        cursor = db.cursor()    
+        try:
+            serial_id = int(self.serial_id.get())
+            surname = self.last_name.get()
+            first_name = self.first_name.get()
+            remarks = self.remarks.get()
+            location = self.location.get()
+
+            if not serial_id or not surname or not first_name or not remarks or not location:
+                messagebox.showerror('Submit Invalid', 'Please Fill in all the fields.')
+            else:
+                duplicate = self.check_duplicate(serial_id)
+                if duplicate:
+                    messagebox.showerror("Error", "Duplicate 'Serial ID' Value Entered, Please Enter A Different Value.")
+
+                query = 'INSERT INTO `tb_carem` (`SERIAL_ID`, `SURNAME`, `FIRST_NAME`,`REMARKS`, `LOC`) VALUES (%s, %s, %s, %s, %s);'
+                values = (serial_id, surname, first_name, remarks, location)
+                cursor.execute(query, values)
+
+                query_1 = 'SELECT ID,SERIAL_ID,FIRST_NAME,SURNAME,DATE_TIME,LOC,REMARKS FROM tb_carem'
+                cursor.execute(query_1)
+                records = cursor.fetchall()
+               
+                self.clear_all()
+                
+                for info in records:
+                    self.tree.insert('', 0, text='new item.', values=info)
+                db.commit()
+                
+                messagebox.showinfo('Successful', 'Inserted Data Successfully.')
+                self.serial_id.delete(0, tk.END)
+                self.last_name.delete(0, tk.END)
+                self.first_name.delete(0, tk.END)
+                self.remarks.delete(0, tk.END)
+                self.location.delete(0, tk.END)
+
+                self.serial_id.focus_set()
+   
+        except mysql.connector.Error as error:
+            print("Failed to retrieve column: {}".format(error))
+
+            if error.errno == 1062:
+                messagebox.showerror('Adding Invalid', 'Duplicate Serial ID')
+            if error.errno == 1416:
+                messagebox.showerror('Adding Invalid', 'Serial ID Cannot Contain String')
+        finally:
+            if db.is_connected():
+                cursor.close()
+                db.close()
+    
+    def update(self):
+        
+        
+        serial_id = self.serial_id.get()
+        surname = self.last_name.get()
+        first_name = self.first_name.get()
+        remarks = self.remarks.get()
+        location = self.location.get()
+    
+        item = self.tree.item(self.tree.focus())
+
+        id = item['values'][0]
+
+        date = item['values'][4]
+        db = mysql.connector.connect(host='localhost', user=self.username1, password=self.password1, db='college')
+        cursor = db.cursor() 
+
+        
+        
+        try:
+            if not serial_id or not surname or not first_name or not remarks or not location:
+                messagebox.showerror('Update Invalid', 'Please Fill in all the fields.')
+            else:
+
+                result = messagebox.askyesno("Warning", "Are you sure you want to update this item?")
+                if result:
+                    if item:
+                        
+                        query_1 = "UPDATE tb_carem SET SERIAL_ID=%s, FIRST_NAME=%s, SURNAME=%s, LOC=%s, REMARKS=%s WHERE id=%s"
+                        values = (serial_id, first_name, surname, location, remarks, id)
+                        cursor.execute(query_1, values)
+
+                        query_2 = 'SELECT ID,SERIAL_ID,FIRST_NAME,SURNAME,DATE_TIME,LOC,REMARKS FROM tb_carem'
+                        
+                        cursor.execute(query_2)
+                        records = cursor.fetchall()
+
+                        self.clear_all()
+                        for info in records:
+                            self.tree.insert('', tk.END, values=info)
+
+                        messagebox.showinfo('Update Successful', f'Item with the ID: {id} was updated.')
+                        
+                        db.commit()
+
+                        # Update the Treeview with the new data
+                        self.tree.item(item, values=(id, serial_id, first_name, surname, date, location, remarks))
+                
+        except mysql.connector.Error as error:
+            print("Failed to retrieve column: {}".format(error))
+
+            if error.errno == 1062:
+                messagebox.showerror('Update Invalid', 'Duplicate Serial ID')
+            if error.errno == 1416:
+                messagebox.showerror('Update Invalid', 'Serial ID Cannot Contain String')
+
+        # except tk.TclError:
+        #     # Show an error message or do something else
+            
+        finally:
+            if db.is_connected():
+                cursor.close()
+                db.close()
+        
+
+    
+    def delete(self):
+        
+        item = self.tree.selection()[0]
+        print(item)
+        data = self.tree.item(item)['values']
+        print(data)
+        
+        id = data[0]
+
+        db = mysql.connector.connect(host='localhost', user=self.username1, password=self.password1, db='college')
+        cursor = db.cursor() 
+
+        try:
+            result = messagebox.askyesno("Warning", "Are you sure you want to delete this item?")
+
+            if result:
+                cursor.execute("DELETE FROM tb_carem WHERE ID=%s", (id,))
+                db.commit()
+                self.tree.delete(item)
+                messagebox.showinfo('Delete Successful', f'Item with the ID: {id} was deleted')
+            else:
+                pass
+
+        except:
+            print('Something gone wrong.')
+
+        finally:
+            if db.is_connected():
+                cursor.close()
+                db.close()
+        
+
     def graphPoints(self):
 
         # SETUP
@@ -244,40 +380,41 @@ class DataBaseGUI:
 
         
         
-        wn.bgpic('pup.png')
+        wn.bgpic('C:\Downloads\codeEnv-main (3)\codeEnv-main\pup.png')
         wn.update()
         
         wn.setworldcoordinates(-250, -250, 250, 250)
         
     
 
-        random_locations = []
-        for i in range(10):
-            random_x = random.randrange(-250, 250)
-            random_y = random.randrange(-250, 250)
-
-            random_locations.append((random_x, random_y))
+        locations = self.get_column_as_a_list('LOC')
+      
 
 
         # DRAWING
 
         t.left(90)
 
-        for i in random_locations:
+        for i in locations:
             
+            coordinate = i.split(', ')
+            x = float(coordinate[0])
+            y = float(coordinate[1])
+            
+
             t.penup()
-            t.goto(i)
+            t.goto(x, y)
             t.write(i, align='center')
             t.stamp()
             t.pendown()
 
-            if i[0] >= 0 and i[1] >= 0:
+            if x >= 0 and y >= 0:
                 print('First Quadrant')
-            elif i[0] <= 0 and i[1] >= 0:
+            elif x <= 0 and y >= 0:
                 print('Second Quadrant')
-            elif i[0] <= 0 and i[1] <= 0:
+            elif x <= 0 and y <= 0:
                 print('Third Quadrant')
-            elif i[0] >= 0 and i[1] <= 0:
+            elif x >= 0 and y <= 0:
                 print('Fourth Quadrant')
 
         wn.exitonclick()
@@ -286,7 +423,64 @@ class DataBaseGUI:
 
         for item in self.tree.get_children():
             self.tree.delete(item)
+    
+    def check_duplicate(self, value):
+        try:
+            # Connect to the database
+            mydb = mysql.connector.connect(
+                host="localhost",
+                user=self.username1,
+                password=self.password1,
+                database='college'
+            )
+            mycursor = mydb.cursor()
             
+            # check if value already exists in the table
+            sql = "SELECT 1 FROM tb_carem WHERE SERIAL_ID = %s"
+            mycursor.execute(sql, (value))
+            result = mycursor.fetchone()
+            
+            if result:
+                return True
+            else:
+                return False
+
+        except mysql.connector.Error as error:
+            print("Failed to check duplicate value: {}".format(error))
+
+        finally:
+            if mydb.is_connected():
+                mycursor.close()
+                mydb.close()
+
+    def get_column_as_a_list(self, column):
+        try:
+            mydb = mysql.connector.connect(
+                host="localhost",
+                user=self.username1,
+                password=self.password1,
+                database='college'
+            )
+            mycursor = mydb.cursor()
+            
+            # Retrieve the specified column from the table
+            sql = "SELECT {} FROM tb_carem".format(column)
+            mycursor.execute(sql)
+            result = mycursor.fetchall()
+
+            # Convert the result to a list
+            column_list = [row[0] for row in result]
+
+
+            return column_list
+
+        except mysql.connector.Error as error:
+            print("Failed to retrieve column: {}".format(error))
+        finally:
+            if mydb.is_connected():
+                mycursor.close()
+                mydb.close()
+
     def center(self, win):
 
         win.update_idletasks()
