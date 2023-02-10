@@ -4,8 +4,14 @@ from tkinter import messagebox, PhotoImage
 from tkinter.ttk import *
 from tkinter import *
 from tkinter import ttk
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 import turtle
 import random
+import numpy as np
 
 class DataBaseGUI:
     
@@ -107,6 +113,8 @@ class DataBaseGUI:
         self.window.geometry(f'{800}x{550}')
         self.window.bind('<Return>', self.submit)
 
+        self.center(self.window)
+
         database_frame = tk.Frame(self.window)
         database_frame.grid(row=0, column=0, padx=10, pady=10)
         
@@ -176,6 +184,10 @@ class DataBaseGUI:
         clear_button = tk.Button(database_frame, text='CLEAR FORMS', width=15, height=2)
         clear_button.grid(row=1, column=3, padx=25, pady=10, ipadx=25)
         clear_button['command'] = self.clear_entries
+
+        matplot_button = tk.Button(database_frame, text='GRAPH POINTS', width=15, height=2)
+        matplot_button.grid(row=2, column=3, padx=25, pady=10, ipadx=25)
+        matplot_button['command'] = self.show_graph
 
         # self.show()
 
@@ -413,6 +425,7 @@ class DataBaseGUI:
 
             wn = turtle.Screen()
             t = turtle.Turtle()
+            t.speed(0)
 
             # t.shape('circle')
             t.shapesize(0.5, 0.5)
@@ -463,7 +476,46 @@ class DataBaseGUI:
         except turtle.Terminator:
             self.graphPoints()
         
+    def show_graph(self):
+        
+        img = mpimg.imread('C:\Downloads\codeEnv-main (3)\codeEnv-main\pup_map.png')
 
+
+        locations = self.get_column_as_a_list('LOC')
+
+        x_coordinates = []
+        y_coordinates = []
+
+
+        for i in locations:
+                
+            coordinate = i.split(', ')
+            x = float(coordinate[0])
+            y = float(coordinate[1])
+
+            x_coordinates.append(x)
+            y_coordinates.append(y)
+
+        print(x_coordinates)
+        print(y_coordinates)
+
+        fig, ax = plt.subplots()
+
+
+
+        ax.imshow(img, extent=[-1024, 1024, -1672, 1672])
+        ax.scatter(x_coordinates, y_coordinates)
+        ax.set_xlim(-250, 250)
+        ax.set_ylim(-250, 250)
+        ax.axhline(y=0, color='gray', linestyle='--')
+        ax.axvline(x=0, color='gray', linestyle='--')
+
+        # for i, label in enumerate(locations):
+            
+        #     ax.annotate(label, (x_coordinates[i], y_coordinates[i]))
+
+        plt.show()
+        
     def clear_all(self):
 
         for item in self.tree.get_children():
