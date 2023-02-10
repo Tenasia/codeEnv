@@ -74,20 +74,28 @@ class DataBaseGUI:
         
         self.username1 = username
         self.password1 = password
+        try:
+            if password:
+                db = mysql.connector.connect(host='localhost', user=username, password=password, db='college')
+                cursor = db.cursor()
+            else:
 
-        if password:
-            db = mysql.connector.connect(host='localhost', user=username, password=password, db='college')
-            cursor = db.cursor()
-        else:
+                messagebox.showinfo('Invalid', 'Input Invalid')
 
-            messagebox.showinfo('Invalid', 'Input Invalid')
+                db = mysql.connector.connect(host='localhost', user=username, db='college')
+                cursor = db.cursor()
 
-            db = mysql.connector.connect(host='localhost', user=username, db='college')
-            cursor = db.cursor()
+        except mysql.connector.Error as error:
+            
+            if error.errno == 1045:
+                messagebox.showinfo('Invalid', 'Input Invalid')
+                
+                db = mysql.connector.connect(host='localhost', user=username, db='college')
+                cursor = db.cursor()
 
         try:  
             self.login_frame.destroy()
-            self.serial_id, self.first_name, self.last_name, self.remarks, self.location= self.create_database_frame() 
+            self.serial_id, self.first_name, self.last_name, self.remarks, self.x_coordinate, self.y_coordinate= self.create_database_frame() 
             print("Successfully Logged In")
         except:
             print("Error occured")
@@ -96,32 +104,36 @@ class DataBaseGUI:
     def create_database_frame(self):
 
         self.window.title("Database Table")
-        self.window.geometry(f'{800}x{500}')
+        self.window.geometry(f'{800}x{550}')
         self.window.bind('<Return>', self.submit)
 
         database_frame = tk.Frame(self.window)
         database_frame.grid(row=0, column=0, padx=10, pady=10)
         
         # LABELS
-        serial_id_label = tk.Label(database_frame, text='Serial ID')
+        serial_id_label = tk.Label(database_frame, text='Serial ID', width=15, height=2)
         serial_id_label.grid(row=0, column=0, pady=10, padx=10)
         serial_id_label.config(font=('Helvetica Bold', 10))
 
-        first_name_label = tk.Label(database_frame, text='First Name')
+        first_name_label = tk.Label(database_frame, text='First Name', width=15, height=2)
         first_name_label.grid(row=1, column=0, pady=10, padx=10)
         first_name_label.config(font=('Helvetica Bold', 10))
 
-        surname_label = tk.Label(database_frame, text='Last Name')
+        surname_label = tk.Label(database_frame, text='Last Name', width=15, height=2)
         surname_label.grid(row=2, column=0, pady=10, padx=10)
         surname_label.config(font=('Helvetica Bold', 10))
         
-        remarks_label = tk.Label(database_frame, text='Remarks')
+        remarks_label = tk.Label(database_frame, text='Remarks', width=15, height=2)
         remarks_label.grid(row=3, column=0, pady=10, padx=10)
         remarks_label.config(font=('Helvetica Bold', 10))
 
-        location_label =  tk.Label(database_frame, text='Location')
-        location_label.grid(row=4, column=0, pady=10, padx=10)
-        location_label.config(font=('Helvetica Bold', 10))
+        location_x = tk.Label(database_frame, text='Location: X', width=15, height=2)
+        location_x.grid(row=4, column=0, pady=10, padx=10)
+        location_x.config(font=('Helvetica Bold', 10))
+
+        location_y = tk.Label(database_frame, text='Location: Y', width=15, height=2)
+        location_y.grid(row=4, column=2, pady=10, padx=10)
+        location_y.config(font=('Helvetica Bold', 10))
 
         # FORMS
 
@@ -138,25 +150,32 @@ class DataBaseGUI:
         remarks.grid(row=3, column=1)
         
 
-        location = tk.Entry(database_frame, width=30)
-        location.grid(row=4, column=1)
+        x_coordinate = tk.Entry(database_frame, width=30)
+        x_coordinate.grid(row=4, column=1)
+
+        y_coordinate = tk.Entry(database_frame, width=30)
+        y_coordinate.grid(row=4, column=3)
 
         # CRUD BUTTONS
-        submit_button = tk.Button(database_frame, text='ADD')
+        submit_button = tk.Button(database_frame, text='ADD', width=15, height=2)
         submit_button.grid(row=0, column=2, padx=25, pady=10, ipadx=25)
         submit_button['command'] = self.submit
         
-        update_button = tk.Button(database_frame, text='UPDATE')
+        update_button = tk.Button(database_frame, text='UPDATE', width=15, height=2)
         update_button.grid(row=1, column=2, padx=25, pady=10, ipadx=25)
         update_button['command'] = self.update
 
-        delete_button = tk.Button(database_frame, text='DELETE')
+        delete_button = tk.Button(database_frame, text='DELETE', width=15, height=2)
         delete_button.grid(row=2, column=2, padx=25, pady=10, ipadx=25)
         delete_button['command'] = self.delete
 
-        graph_button = tk.Button(database_frame, text='SHOW GRAPH')
+        graph_button = tk.Button(database_frame, text='SHOW GRAPH', width=15, height=2)
         graph_button.grid(row=0, column=3, padx=25, pady=10, ipadx=25)
         graph_button['command'] = self.graphPoints
+
+        clear_button = tk.Button(database_frame, text='CLEAR FORMS', width=15, height=2)
+        clear_button.grid(row=1, column=3, padx=25, pady=10, ipadx=25)
+        clear_button['command'] = self.clear_entries
 
         # self.show()
 
@@ -165,9 +184,11 @@ class DataBaseGUI:
         # show_button['command'] = self.show
         # TABLE
         
+        
         self.create_tree()
+        self.tree.bind('<<TreeviewSelect>>', self.update_entry)
 
-        return serial_id, first_name, surname, remarks, location
+        return serial_id, first_name, surname, remarks, x_coordinate, y_coordinate
 
     def create_tree(self):
 
@@ -222,9 +243,13 @@ class DataBaseGUI:
             surname = self.last_name.get()
             first_name = self.first_name.get()
             remarks = self.remarks.get()
-            location = self.location.get()
+            
+            x_coordinate = self.x_coordinate.get()
+            y_coordinate = self.y_coordinate.get()
 
-            if not serial_id or not surname or not first_name or not remarks or not location:
+            location = f'{x_coordinate}, {y_coordinate}'
+            
+            if not serial_id or not surname or not first_name or not remarks or not x_coordinate or not y_coordinate:
                 messagebox.showerror('Submit Invalid', 'Please Fill in all the fields.')
             else:
                 duplicate = self.check_duplicate(serial_id)
@@ -246,11 +271,13 @@ class DataBaseGUI:
                 db.commit()
                 
                 messagebox.showinfo('Successful', 'Inserted Data Successfully.')
+
                 self.serial_id.delete(0, tk.END)
                 self.last_name.delete(0, tk.END)
                 self.first_name.delete(0, tk.END)
                 self.remarks.delete(0, tk.END)
-                self.location.delete(0, tk.END)
+                self.x_coordinate.delete(0, tk.END)
+                self.y_coordinate.delete(0, tk.END)
 
                 self.serial_id.focus_set()
    
@@ -273,8 +300,11 @@ class DataBaseGUI:
         surname = self.last_name.get()
         first_name = self.first_name.get()
         remarks = self.remarks.get()
-        location = self.location.get()
-    
+        x_coordinate = self.x_coordinate.get()
+        y_coordinate = self.y_coordinate.get()
+
+        location = f'{x_coordinate}, {y_coordinate}'
+
         item = self.tree.item(self.tree.focus())
 
         id = item['values'][0]
@@ -307,9 +337,16 @@ class DataBaseGUI:
                         for info in records:
                             self.tree.insert('', tk.END, values=info)
 
+                        db.commit()
+
                         messagebox.showinfo('Update Successful', f'Item with the ID: {id} was updated.')
                         
-                        db.commit()
+                        self.serial_id.delete(0, tk.END)
+                        self.last_name.delete(0, tk.END)
+                        self.first_name.delete(0, tk.END)
+                        self.remarks.delete(0, tk.END)
+                        self.x_coordinate.delete(0, tk.END)
+                        self.y_coordinate.delete(0, tk.END)
 
                         # Update the Treeview with the new data
                         self.tree.item(item, values=(id, serial_id, first_name, surname, date, location, remarks))
@@ -367,63 +404,115 @@ class DataBaseGUI:
     def graphPoints(self):
 
         # SETUP
-        turtle.title('PUP MAIN MAP')
+        try: 
 
-        # img = PhotoImage(file='pupicon.png')
-        # turtle._Screen._root.iconphoto(True, img)
+            turtle.title('PUP MAIN MAP')
 
-        wn = turtle.Screen()
-        t = turtle.Turtle()
+            # img = PhotoImage(file='pupicon.png')
+            # turtle._Screen._root.iconphoto(True, img)
 
-        # t.shape('circle')
-        t.shapesize(0.5, 0.5)
+            wn = turtle.Screen()
+            t = turtle.Turtle()
 
+            # t.shape('circle')
+            t.shapesize(0.5, 0.5)
+
+            
+            
+            wn.bgpic('C:\Downloads\codeEnv-main (3)\codeEnv-main\pup.png')
+            wn.update()
+            
+            wn.setworldcoordinates(-250, -250, 250, 250)
+            
         
+
+            locations = self.get_column_as_a_list('LOC')
         
-        wn.bgpic('C:\Downloads\codeEnv-main (3)\codeEnv-main\pup.png')
-        wn.update()
-        
-        wn.setworldcoordinates(-250, -250, 250, 250)
-        
+
+
+            # DRAWING
+
+            t.left(90)
+
+            for i in locations:
+                
+                coordinate = i.split(', ')
+                x = float(coordinate[0])
+                y = float(coordinate[1])
+                
+
+                t.penup()
+                t.goto(x, y)
+                t.write(i, align='center')
+                t.stamp()
+                t.pendown()
+
+                if x >= 0 and y >= 0:
+                    print('First Quadrant')
+                elif x <= 0 and y >= 0:
+                    print('Second Quadrant')
+                elif x <= 0 and y <= 0:
+                    print('Third Quadrant')
+                elif x >= 0 and y <= 0:
+                    print('Fourth Quadrant')
+
     
-
-        locations = self.get_column_as_a_list('LOC')
-      
-
-
-        # DRAWING
-
-        t.left(90)
-
-        for i in locations:
+            wn.exitonclick()
             
-            coordinate = i.split(', ')
-            x = float(coordinate[0])
-            y = float(coordinate[1])
-            
-
-            t.penup()
-            t.goto(x, y)
-            t.write(i, align='center')
-            t.stamp()
-            t.pendown()
-
-            if x >= 0 and y >= 0:
-                print('First Quadrant')
-            elif x <= 0 and y >= 0:
-                print('Second Quadrant')
-            elif x <= 0 and y <= 0:
-                print('Third Quadrant')
-            elif x >= 0 and y <= 0:
-                print('Fourth Quadrant')
-
-        wn.exitonclick()
+        
+        except turtle.Terminator:
+            self.graphPoints()
+        
 
     def clear_all(self):
 
         for item in self.tree.get_children():
             self.tree.delete(item)
     
+    def clear_entries(self):
+
+        self.serial_id.delete(0, tk.END)
+        self.first_name.delete(0, tk.END)
+        self.last_name.delete(0, tk.END)
+        self.x_coordinate.delete(0, tk.END)
+        self.y_coordinate.delete(0, tk.END)
+        self.remarks.delete(0, tk.END)
+
+    def update_entry(self, event):
+        selected_item = self.tree.focus()
+        print(selected_item)
+
+        serial_id = self.tree.item(selected_item)['values'][1]
+        first_name = self.tree.item(selected_item)['values'][2]
+        surname = self.tree.item(selected_item)['values'][3]
+        location = self.tree.item(selected_item)['values'][5]
+        remarks = self.tree.item(selected_item)['values'][6]
+
+        coordinates = location.split(', ')
+        print(coordinates)
+        x_coordinate = coordinates[0]
+        y_coordinate = coordinates[1]
+
+
+        
+        self.serial_id.delete(0, tk.END)
+        self.first_name.delete(0, tk.END)
+        self.last_name.delete(0, tk.END)
+        self.x_coordinate.delete(0, tk.END)
+        self.y_coordinate.delete(0, tk.END)
+        self.remarks.delete(0, tk.END)
+        
+        self.serial_id.insert(0, serial_id)
+        self.first_name.insert(0, first_name)
+        self.last_name.insert(0, surname)
+        self.x_coordinate.insert(0, x_coordinate)
+        self.y_coordinate.insert(0, y_coordinate)
+        self.remarks.insert(0, remarks)
+
+  
+
+
+
     def check_duplicate(self, value):
         try:
             # Connect to the database
