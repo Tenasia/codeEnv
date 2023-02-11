@@ -486,15 +486,18 @@ class DataBaseGUI:
         x_coordinates = []
         y_coordinates = []
 
-
-        for i in locations:
+        
+        for i in range(100):
                 
-            coordinate = i.split(', ')
-            x = float(coordinate[0])
-            y = float(coordinate[1])
+            # coordinate = i.split(', ')
+            # x = float(coordinate[0])
+            # y = float(coordinate[1])
 
-            x_coordinates.append(x)
-            y_coordinates.append(y)
+            x_rand = random.randint(-350, 350)
+            y_rand = random.randint(-350, 350)
+
+            x_coordinates.append(x_rand)
+            y_coordinates.append(x_rand)
 
         print(x_coordinates)
         print(y_coordinates)
@@ -503,10 +506,10 @@ class DataBaseGUI:
 
 
 
-        ax.imshow(img, extent=[-1024, 1024, -1672, 1672])
-        ax.scatter(x_coordinates, y_coordinates)
-        ax.set_xlim(-250, 250)
-        ax.set_ylim(-250, 250)
+        ax.imshow(img, extent=[-1024, 1024, -672, 672])
+        ax.scatter(x_rand, y_rand, c='black')
+        ax.set_xlim(-350, 350)
+        ax.set_ylim(-350, 350)
         ax.axhline(y=0, color='gray', linestyle='--')
         ax.axvline(x=0, color='gray', linestyle='--')
 
