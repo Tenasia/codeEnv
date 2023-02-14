@@ -26,10 +26,11 @@ class DataBaseGUI:
         # VARIABLES
         self.login_frame, self.login_button, self.username, self.password = self.create_login_frame()
 
-       
+        
 
     def create_login_frame(self):
-        
+
+    
         # INITIALIZE VARIABLES
         self.window.resizable(False, False)
         self.window.bind('<Return>', self.login)
@@ -108,6 +109,13 @@ class DataBaseGUI:
             db.rollback()
 
     def create_database_frame(self):
+        
+        # menu_bar = tk.Menu(self.window)
+        # menu = tk.Menu(menu_bar, tearoff=0)
+        # # menu_bar.add_command(label='Open Turtle Window', command=self.graphPoints)
+        # # menu_bar.add_command(label='Graph Points', command=self.graphPoints)
+        # # menu_bar.add_command(label='Show Statistics', command=self.graphPoints)
+        # self.window.config(menu=menu_bar)
 
         self.window.title("Database Table")
         self.window.geometry(f'{800}x{550}')
@@ -177,18 +185,22 @@ class DataBaseGUI:
         delete_button.grid(row=2, column=2, padx=25, pady=10, ipadx=25)
         delete_button['command'] = self.delete
 
-        graph_button = tk.Button(database_frame, text='SHOW GRAPH', width=15, height=2)
-        graph_button.grid(row=0, column=3, padx=25, pady=10, ipadx=25)
-        graph_button['command'] = self.graphPoints
+        self.graph_button = tk.Button(database_frame, text='SHOW GRAPH', width=15, height=2)
+        self.graph_button.grid(row=0, column=3, padx=25, pady=10, ipadx=25)
+        self.graph_button['command'] = self.graphPoints
 
         clear_button = tk.Button(database_frame, text='CLEAR FORMS', width=15, height=2)
         clear_button.grid(row=1, column=3, padx=25, pady=10, ipadx=25)
         clear_button['command'] = self.clear_entries
 
-        matplot_button = tk.Button(database_frame, text='GRAPH POINTS', width=15, height=2)
-        matplot_button.grid(row=2, column=3, padx=25, pady=10, ipadx=25)
-        matplot_button['command'] = self.show_graph
+        # matplot_button = tk.Button(database_frame, text='GRAPH POINTS', width=15, height=2)
+        # matplot_button.grid(row=2, column=3, padx=25, pady=10, ipadx=25)
+        # matplot_button['command'] = self.show_graph
 
+        
+        self.matplot_button = tk.Button(database_frame, text='GRAPH POINTS', width=15, height=2)
+        self.matplot_button.grid(row=2, column=3, padx=25, pady=10, ipadx=25)
+        self.matplot_button['command'] = self.show_graph
         # self.show()
 
         # show_button = tk.Button(database_frame, text='SHOW TABLE')
@@ -414,10 +426,12 @@ class DataBaseGUI:
         
 
     def graphPoints(self):
-
+        
+        # self.graph_button.config(state=tk.DISABLED)
         # SETUP
         try: 
-
+            
+            
             turtle.title('PUP MAIN MAP')
 
             # img = PhotoImage(file='pupicon.png')
@@ -469,35 +483,61 @@ class DataBaseGUI:
                 elif x >= 0 and y <= 0:
                     print('Fourth Quadrant')
 
-    
+ 
             wn.exitonclick()
             
         
         except turtle.Terminator:
             self.graphPoints()
+
+        
+
+        
         
     def show_graph(self):
+
+        self.matplot_button.config(state=tk.DISABLED)
+
+
         
         img = mpimg.imread('C:\Downloads\codeEnv-main (3)\codeEnv-main\pup_map.png')
-
 
         locations = self.get_column_as_a_list('LOC')
 
         x_coordinates = []
         y_coordinates = []
 
+        quadrant_1 = []
+        quadrant_2 = []
+        quadrant_3 = []
+        quadrant_4 = []
         
-        for i in range(100):
+        for i in locations:
                 
-            # coordinate = i.split(', ')
-            # x = float(coordinate[0])
-            # y = float(coordinate[1])
+            coordinate = i.split(', ')
+            x = float(coordinate[0])
+            y = float(coordinate[1])
 
-            x_rand = random.randint(-350, 350)
-            y_rand = random.randint(-350, 350)
+            # x = random.randint(-350, 350)
+            # y = random.randint(-350, 350)
 
-            x_coordinates.append(x_rand)
-            y_coordinates.append(x_rand)
+            x_coordinates.append(x)
+            y_coordinates.append(y)
+
+            if x >= 0 and y >= 0:
+                print('First Quadrant')
+                quadrant_1.append((x, y))
+            elif x <= 0 and y >= 0:
+                print('Second Quadrant')
+                quadrant_2.append((x, y))
+            elif x <= 0 and y <= 0:
+                print('Third Quadrant')
+                quadrant_3.append((x, y))
+            elif x >= 0 and y <= 0:
+                print('Fourth Quadrant')
+                quadrant_4.append((x, y))
+            else:
+                pass
 
         print(x_coordinates)
         print(y_coordinates)
@@ -506,8 +546,10 @@ class DataBaseGUI:
 
 
 
+
+
         ax.imshow(img, extent=[-1024, 1024, -672, 672])
-        ax.scatter(x_rand, y_rand, c='black')
+        ax.scatter(x_coordinates, y_coordinates, c='black')
         ax.set_xlim(-350, 350)
         ax.set_ylim(-350, 350)
         ax.axhline(y=0, color='gray', linestyle='--')
@@ -518,6 +560,8 @@ class DataBaseGUI:
         #     ax.annotate(label, (x_coordinates[i], y_coordinates[i]))
 
         plt.show()
+
+        self.matplot_button.config(state=tk.NORMAL)
         
     def clear_all(self):
 
