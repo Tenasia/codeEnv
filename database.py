@@ -12,6 +12,7 @@ from matplotlib.figure import Figure
 import turtle
 import random
 import numpy as np
+import time
 
 class DataBaseGUI:
     
@@ -25,7 +26,7 @@ class DataBaseGUI:
 
         # VARIABLES
         self.login_frame, self.login_button, self.username, self.password = self.create_login_frame()
-
+        
         
 
     def create_login_frame(self):
