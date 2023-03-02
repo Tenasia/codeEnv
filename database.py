@@ -264,7 +264,7 @@ class DataBaseGUI:
         db = mysql.connector.connect(host='localhost', user=self.username1, password=self.password1, db='college')
         cursor = db.cursor()    
         try:
-            serial_id = int(self.serial_id.get())
+            serial_id = self.serial_id.get()
             surname = self.last_name.get()
             first_name = self.first_name.get()
             remarks = self.remarks.get()
@@ -616,13 +616,13 @@ class DataBaseGUI:
     def check_duplicate(self, value):
         try:
             # Connect to the database
-            mydb = mysql.connector.connect(
+            db = mysql.connector.connect(
                 host="localhost",
                 user=self.username1,
                 password=self.password1,
                 database='college'
             )
-            mycursor = mydb.cursor()
+            mycursor = db.cursor()
             
             # check if value already exists in the table
             sql = "SELECT 1 FROM tb_carem WHERE SERIAL_ID = %s"
@@ -638,19 +638,19 @@ class DataBaseGUI:
             print("Failed to check duplicate value: {}".format(error))
 
         finally:
-            if mydb.is_connected():
+            if db.is_connected():
                 mycursor.close()
-                mydb.close()
+                db.close()
 
     def get_column_as_a_list(self, column):
         try:
-            mydb = mysql.connector.connect(
+            db = mysql.connector.connect(
                 host="localhost",
                 user=self.username1,
                 password=self.password1,
                 database='college'
             )
-            mycursor = mydb.cursor()
+            mycursor = db.cursor()
             
             # Retrieve the specified column from the table
             sql = "SELECT {} FROM tb_carem".format(column)
@@ -666,9 +666,9 @@ class DataBaseGUI:
         except mysql.connector.Error as error:
             print("Failed to retrieve column: {}".format(error))
         finally:
-            if mydb.is_connected():
+            if db.is_connected():
                 mycursor.close()
-                mydb.close()
+                db.close()
 
     def center(self, win):
 
